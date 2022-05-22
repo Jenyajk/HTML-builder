@@ -14,8 +14,8 @@ process.stdin.on('data', data => fs.appendFile('02-write-file/file.txt', data , 
 
 }));
 
-process.on('exit', (code) => {
-  console.log('Process exit event with code: ', code);
+process.on('exit', () => {
+  console.log('Process exit event with code');
 });
 
 console.log('Write for me');
