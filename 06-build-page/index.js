@@ -114,7 +114,7 @@ async function copyFiles(output, input) {
 
 }
 
-async function bundleHTML(){
+async function Page(){
   const components = [];
   try{
     const files = await promises.readdir(folderComponents, { withFileTypes: true });
@@ -128,7 +128,6 @@ async function bundleHTML(){
     let innerHTML = await promises.readFile(path.join(pathTemplate), 'utf8');
     components.forEach(elem => {
       let pos = innerHTML.indexOf('{{' + elem.name + '}}');
-      console.log(folderComponents);
       if (pos > 0) {
         let innerHTML1 = innerHTML.slice(0, pos);
         let innerHTML2  = innerHTML.slice(pos + elem.name.length + 4);
@@ -146,7 +145,7 @@ async function bundleHTML(){
   await Delete();
   await Style();
   await copyFiles(folderAssets, folderAssetsCopy);
-  await bundleHTML(pathTemplate, pathIndex, folderComponents);
+  await Page(pathTemplate, pathIndex, folderComponents);
 })();
 
 
