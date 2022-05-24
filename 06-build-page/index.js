@@ -8,22 +8,29 @@ const folderAssetsCopy = path.join(__dirname, 'project-dist/assets');
 const folderFontsCopy = path.join(folderAssetsCopy, 'fonts');
 const folderImgCopy = path.join(folderAssetsCopy, 'img');
 const folderSvgCopy = path.join(folderAssetsCopy, 'svg');
+const pathTemplate = path.join(__dirname, 'template.html');
 
-async function Delete() {
-  try {
-    await promises.rm(folderPath, {recursive : true, focre : true});
-  } catch (err) {
-    console.error( err);
-  }
-}
+
 async function Create() {
   try {
     await promises.mkdir(folderPath, { recursive: true });
   } catch (err) {
-    console.error( err);
+    console.error( 'Папка не создана' + err);
   }
 }
 
+async function Delete() {
+  try { 
+    if(fs.access(folderPath, fs.F_OK, (err) => {
+      if (err) {
+        console.error('Нет папки' +  err);
+      }
+    })) {
+      await promises.rm(folderPath, {recursive : true, focre : true});}
+  } catch (err) {
+    console.error( err);
+  }
+}
 async function Style () {
   try {
     await promises.writeFile(path.join(folderPath, 'index.html'), '');
@@ -48,7 +55,7 @@ async function Style () {
             const noCssPath = path.join(folderPathStyle, noCss);
             fs.unlink(noCssPath, (err) => {
               if (err) {
-                console.error(err);
+                console.error('Нет .css' +  err);
               }
             });
           }
@@ -81,26 +88,31 @@ async function Style () {
       }
       );
   } catch (err) {
-    console.error( err);
+    console.error( 'Стили не переданы' + err);
   }
 }
 
 async function copyFiles(output, input) {
-  const files = await promises.readdir(output, { withFileTypes: true });
-  for (let file of files) {
-    if (file.isDirectory()){
-      await copyFiles(path.join(output, file.name), path.join(input, file.name));
-    } else if (file.isFile()) {
-      fs.copyFile(path.join(output, file.name), path.join(input, file.name), (err) => {
-        if (err) {
-          console.log(err);
-        }
-      });
+  try {
+    const files = await promises.readdir(output, { withFileTypes: true });
+    for (let file of files) {
+      if (file.isDirectory()){
+        await copyFiles(path.join(output, file.name), path.join(input, file.name));
+      } else if (file.isFile()) {
+        fs.copyFile(path.join(output, file.name), path.join(input, file.name), (err) => {
+          if (err) {
+            console.log('Папка не скопировалась' + err);
+          }
+        });
+      }
     }
+  } catch (err) {
+    console.log('Файлы не скопировались' + err);
   }
+
 }
 
-async function bundleHTML(fileFrom, fileTo, folderPath){
+async function bundleHTML(pathTemplate, fileTo, folderPath){
   const components = [];
   try{
     const files = await promises.readdir(folderPath, { withFileTypes: true });
@@ -111,28 +123,28 @@ async function bundleHTML(fileFrom, fileTo, folderPath){
         components.push({name: name, data :fileContent});
       }
     }
-    let innerHTML = await promises.readFile(path.join(fileFrom), 'utf8');
-    components.forEach(component => {
-      let pos = innerHTML.indexOf('{{' + component.name + '}}');
-      console.log(pos);
+    let innerHTML = await promises.readFile(path.join(pathTemplate), 'utf8');
+    components.forEach(elem => {
+      let pos = innerHTML.indexOf('{{' + elem.name + '}}');
+      console.log(pathTemplate);
       if (pos > 0) {
-        let htmlContentBefore = innerHTML.slice(0, pos);
-        let htmlContentAfter  = innerHTML.slice(pos + component.name.length + 4);
-        innerHTML = htmlContentBefore + component.data + htmlContentAfter;
+        let innerHTML1 = innerHTML.slice(0, pos);
+        let innerHTML2  = innerHTML.slice(pos + elem.name.length + 4);
+        innerHTML = innerHTML1 + elem.data + innerHTML2;
       }
     });
     await promises.writeFile(fileTo, innerHTML);
   } catch (err) {
-    console.log(err);
+    console.log('HTML не собран' + err);
   }
 }
 
 (async () => {
-  await Delete();
   await Create();
+  await Delete();
   await Style();
   await copyFiles(folderAssets, folderAssetsCopy);
-  await bundleHTML(path.join(__dirname, 'template.html'), path.join(folderPath, 'index.html'), path.join(__dirname, 'components'));
+  await bundleHTML(pathTemplate, path.join(folderPath, 'index.html'), path.join(__dirname, 'components'));
 })();
 
 
