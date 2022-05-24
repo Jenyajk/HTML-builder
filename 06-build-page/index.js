@@ -9,6 +9,8 @@ const folderFontsCopy = path.join(folderAssetsCopy, 'fonts');
 const folderImgCopy = path.join(folderAssetsCopy, 'img');
 const folderSvgCopy = path.join(folderAssetsCopy, 'svg');
 const pathTemplate = path.join(__dirname, 'template.html');
+const pathIndex = path.join(folderPath, 'index.html');
+const folderComponents = path.join(__dirname, 'components');
 
 
 async function Create() {
@@ -112,13 +114,13 @@ async function copyFiles(output, input) {
 
 }
 
-async function bundleHTML(pathTemplate, fileTo, folderPath){
+async function bundleHTML(){
   const components = [];
   try{
-    const files = await promises.readdir(folderPath, { withFileTypes: true });
+    const files = await promises.readdir(folderComponents, { withFileTypes: true });
     for (const file of files) {
-      if (path.extname(path.join(folderPath, file.name)) === '.html'){
-        const fileContent = await promises.readFile(path.join(folderPath, file.name), 'utf8');
+      if (path.extname(path.join(folderComponents, file.name)) === '.html'){
+        const fileContent = await promises.readFile(path.join(folderComponents, file.name), 'utf8');
         const name = file.name.split('.')[0];
         components.push({name: name, data :fileContent});
       }
@@ -126,14 +128,14 @@ async function bundleHTML(pathTemplate, fileTo, folderPath){
     let innerHTML = await promises.readFile(path.join(pathTemplate), 'utf8');
     components.forEach(elem => {
       let pos = innerHTML.indexOf('{{' + elem.name + '}}');
-      console.log(pathTemplate);
+      console.log(folderComponents);
       if (pos > 0) {
         let innerHTML1 = innerHTML.slice(0, pos);
         let innerHTML2  = innerHTML.slice(pos + elem.name.length + 4);
         innerHTML = innerHTML1 + elem.data + innerHTML2;
       }
     });
-    await promises.writeFile(fileTo, innerHTML);
+    await promises.writeFile(pathIndex, innerHTML);
   } catch (err) {
     console.log('HTML не собран' + err);
   }
@@ -144,7 +146,7 @@ async function bundleHTML(pathTemplate, fileTo, folderPath){
   await Delete();
   await Style();
   await copyFiles(folderAssets, folderAssetsCopy);
-  await bundleHTML(pathTemplate, path.join(folderPath, 'index.html'), path.join(__dirname, 'components'));
+  await bundleHTML(pathTemplate, pathIndex, folderComponents);
 })();
 
 
