@@ -2,11 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const folderPathStyle = '05-merge-styles/styles';
 const folderPath = '05-merge-styles/project-dist';
-fs.writeFile(path.join(folderPath, 'bundle.css'),'', (err) => {
-  if (err) {
-    console.error(err);
-  }
-});
+
 fs.readdir(folderPathStyle, (err, files) => {
   if (err) {
     console.error(err);
@@ -18,7 +14,7 @@ fs.readdir(folderPathStyle, (err, files) => {
       const noCssPath = path.join(folderPathStyle, noCss);
       fs.unlink(noCssPath, (err) => {
         if (err) {
-          console.error(err);
+          console.error('CDCSCDD' + err);
         }
       });
     }
@@ -49,6 +45,4 @@ fs.readdir(folderPathStyle, (err, files) => {
     input2.pipe(output);
     input3.pipe(output);}
 });
-
-
 
